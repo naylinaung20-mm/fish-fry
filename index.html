@@ -83,11 +83,12 @@
     <button onclick="restartFry()">🔁 Restart Fry</button>
   </div>
 
-  <!-- 🎮 3D + Logic -->
+  <!-- 3D + Logic -->
   <script src="https://cdn.jsdelivr.net/npm/three@0.158.0/build/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.158.0/examples/js/loaders/GLTFLoader.js"></script>
   <script>
-    let scene, camera, renderer, fish, mixer, clock;
-    let sizzleSound = new Audio("sizzle.mp3"); // Replace with actual file
+    let scene, camera, renderer, fish, clock;
+    let sizzleSound = new Audio("https://cdn.pixabay.com/download/audio/2023/03/06/audio_5b3fa8a408.mp3"); // Free sizzling sound
     sizzleSound.loop = true;
     let isSizzling = false;
 
@@ -122,12 +123,14 @@
       pan.position.y = -1.2;
       scene.add(pan);
 
-      fish = new THREE.Mesh(
-        new THREE.BoxGeometry(1.5, 0.5, 0.3),
-        new THREE.MeshStandardMaterial({ color: 0xffcc99 })
-      );
-      fish.position.y = -0.8;
-      scene.add(fish);
+      // Load fish from CDN
+      const loader = new THREE.GLTFLoader();
+      loader.load("https://models.babylonjs.com/fish.glb", (gltf) => {
+        fish = gltf.scene;
+        fish.scale.set(0.03, 0.03, 0.03);
+        fish.position.y = -0.8;
+        scene.add(fish);
+      });
 
       clock = new THREE.Clock();
       animate();
@@ -140,7 +143,7 @@
     }
 
     function flipFish() {
-      fish.rotation.y += Math.PI; // 180° flip
+      if (fish) fish.rotation.y += Math.PI;
     }
 
     function toggleSound() {
@@ -149,11 +152,11 @@
     }
 
     function restartFry() {
-      fish.rotation.y = 0;
+      if (fish) fish.rotation.y = 0;
       sizzleSound.pause();
       timerEl.textContent = "00:00";
       statusEl.textContent = "Status: 🟢 Golden";
-      location.reload(); // Reset everything
+      location.reload();
     }
 
     window.addEventListener('load', init);
