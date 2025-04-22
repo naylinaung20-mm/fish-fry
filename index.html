@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Fish Fry 3D 🍳🐟</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Comic Sans MS', cursive, sans-serif;
+      background: #fff5ec;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      height: 100vh;
+      overflow: hidden;
+    }
+    header {
+      font-size: 1.5em;
+      margin: 20px;
+      background: #ffddc1;
+      padding: 10px 20px;
+      border-radius: 20px;
+      box-shadow: 0 4px 8px #ffa07a;
+    }
+    #scene-container {
+      width: 80%;
+      height: 50%;
+      background: #e0e0e0;
+      border: 6px dashed #ffa07a;
+      border-radius: 30px;
+      box-shadow: inset 0 0 15px #999;
+      position: relative;
+    }
+    canvas {
+      border-radius: 30px;
+    }
+    .fry-meter {
+      margin: 10px;
+      padding: 5px;
+      background: #fff;
+      border: 2px solid #ffaeae;
+      border-radius: 10px;
+      width: 300px;
+      text-align: center;
+      box-shadow: 0 2px 5px #aaa;
+    }
+    .controls {
+      margin-top: 20px;
+      display: flex;
+      gap: 15px;
+    }
+    button {
+      font-size: 1em;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 30px;
+      background: #ffa07a;
+      color: white;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+      cursor: pointer;
+      transition: transform 0.2s;
+    }
+    button:hover {
+      transform: scale(1.05);
+      background: #ff6347;
+    }
+  </style>
+</head>
+<body>
+  <header>⏱️ Fry Timer: <span id="timer">00:00</span></header>
+
+  <div id="scene-container"></div>
+
+  <div class="fry-meter">
+    Frying Meter: 🧊 ░░░ 🔥  
+    <span id="status">Status: 🟢 Golden</span>
+  </div>
+
+  <div class="controls">
+    <button onclick="flipFish()">🔄 Flip Fish</button>
+    <button onclick="toggleSound()">🔊 Toggle Sizzle</button>
+    <button onclick="restartFry()">🔁 Restart Fry</button>
+  </div>
+
+  <!-- 🎮 3D + Logic -->
+  <script src="https://cdn.jsdelivr.net/npm/three@0.158.0/build/three.min.js"></script>
+  <script>
+    let scene, camera, renderer, fish, mixer, clock;
+    let sizzleSound = new Audio("sizzle.mp3"); // Replace with actual file
+    sizzleSound.loop = true;
+    let isSizzling = false;
+
+    const startTime = Date.now();
+    const timerEl = document.getElementById("timer");
+    const statusEl = document.getElementById("status");
+
+    function updateTimer() {
+      const now = Date.now();
+      const diff = Math.floor((now - startTime) / 1000);
+      const min = String(Math.floor(diff / 60)).padStart(2, '0');
+      const sec = String(diff % 60).padStart(2, '0');
+      timerEl.textContent = `${min}:${sec}`;
+    }
+
+    function init() {
+      scene = new THREE.Scene();
+      camera = new THREE.PerspectiveCamera(75, 1.6, 0.1, 1000);
+      camera.position.z = 5;
+
+      renderer = new THREE.WebGLRenderer({ antialias: true });
+      renderer.setSize(window.innerWidth * 0.8, window.innerHeight * 0.5);
+      document.getElementById("scene-container").appendChild(renderer.domElement);
+
+      const light = new THREE.HemisphereLight(0xffffff, 0x444444, 1);
+      scene.add(light);
+
+      const pan = new THREE.Mesh(
+        new THREE.CylinderGeometry(2.5, 2.5, 0.3, 32),
+        new THREE.MeshStandardMaterial({ color: 0x222222 })
+      );
+      pan.position.y = -1.2;
+      scene.add(pan);
+
+      fish = new THREE.Mesh(
+        new THREE.BoxGeometry(1.5, 0.5, 0.3),
+        new THREE.MeshStandardMaterial({ color: 0xffcc99 })
+      );
+      fish.position.y = -0.8;
+      scene.add(fish);
+
+      clock = new THREE.Clock();
+      animate();
+      setInterval(updateTimer, 1000);
+    }
+
+    function animate() {
+      requestAnimationFrame(animate);
+      renderer.render(scene, camera);
+    }
+
+    function flipFish() {
+      fish.rotation.y += Math.PI; // 180° flip
+    }
+
+    function toggleSound() {
+      isSizzling = !isSizzling;
+      isSizzling ? sizzleSound.play() : sizzleSound.pause();
+    }
+
+    function restartFry() {
+      fish.rotation.y = 0;
+      sizzleSound.pause();
+      timerEl.textContent = "00:00";
+      statusEl.textContent = "Status: 🟢 Golden";
+      location.reload(); // Reset everything
+    }
+
+    window.addEventListener('load', init);
+  </script>
+</body>
+</html>
